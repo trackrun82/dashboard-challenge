@@ -20,17 +20,8 @@ function dropDown(){
 };
 dropDown();
 
-// Create a summing function
-function sum(arr) {
-  var total = 0;
-  for (var i = 0; i < arr.length; i++) {
-    total += arr[i];
-  }
-  return total;
-}
-
-// Consider a specific individual/person (test subject ID 940)
-function buildPlot(){
+// Consider a specific individual/person (test subject ID 940) for main page
+function initialPage(){
   d3.json("samples.json").then(function(jsonData){
 
     // Retrieve the values from the metaData section
@@ -106,12 +97,32 @@ function buildPlot(){
     })
     // console.log(familyArray2);
   
+    // Loop over both arrays and sum common families
+    var tempArr = []
+    var result  = {};
+    for(index in familyArray2){
+      var element = familyArray2[index];
+      if(tempArr.indexOf(element) > -1){
+        result[element]= parseInt(values4[index]) + parseInt(result[element]);
+      }
+      else{
+        tempArr.push(element);
+        result[element] = values4[index];
+      }
+    }
+    // console.log(result);
+
+    // Put the results into an array and then sort out top 10
+    const resultsArray2 = Object.entries(result);
+    const bubbleValues1 = resultsArray2.map(value => value[1]);
+    const bubbleLabels1 = resultsArray2.map(id => id[0]);
+    
     // Create trace variable
     const trace4 ={
-      x: values4,
-      y: familyArray2,
+      x: bubbleValues1,
+      y: bubbleLabels1,
       mode: "markers",
-      marker: {size:values4},
+      marker: {size:bubbleValues1, sizemode: 'area'},
       // text: familyArray2
     };
     
@@ -128,7 +139,7 @@ function buildPlot(){
     Plotly.newPlot("bubble", data4, layout4);
   });
 };
-buildPlot();
+initialPage();
 
 // Build bar graph to show top 10 bacteria for all subjects
 function buildSecondPlot(){
@@ -137,31 +148,38 @@ function buildSecondPlot(){
     const sampleValues = jsonData.samples.map(subject => subject.sample_values);
     const sampleIds = jsonData.samples.map(subject => subject.otu_ids);
     const sampleLabels = jsonData.samples.map(subject => subject.otu_labels);
+    // console.log(sampleLabels)
 
-    let joinedArray = [];
-    for (let i=0; i < sampleValues.length; i++){
-      joinedArray.push(`${sampleIds[i]}: ${sampleValues[i]}`)
-    };
-    sampleIds.forEach(subject => subject)
-    valueArray = sampleValues.flat();
-    // console.log(joinedArray);
+    idsArray = sampleIds.flat();
+    valuesArray = sampleValues.flat();
+  
+    // Loop over both arrays and sum common ids
+    var tempArr = []
+    var result  = {};
+    for(index in idsArray){
+      var element = idsArray[index];
+      if(tempArr.indexOf(element) > -1){
+        result[element]= parseInt(valuesArray[index]) + parseInt(result[element]);
+      }
+      else{
+        tempArr.push(element);
+        result[element] = valuesArray[index];
+      }
+    }
+    // console.log(result);
 
-    // console.log(`The sum is : ${sum(sampleValues)}`);
-    const values2 = jsonData.samples[0].sample_values.slice(0,10).reverse();
-    const labels2 = jsonData.samples[0].otu_ids.slice(0,10).reverse();
-    const hoverText2 = jsonData.samples[0].otu_labels.slice(0,10).reverse();
-
-    // console.log(values2);
-    // console.log(labels2);
-    // console.log(hoverText2);
+    // Put the results into an array and then sort out top 10
+    const resultsArray = Object.entries(result);
+    const sortValues = resultsArray.sort((small, big) =>big[1] - small[1]);
+    const values2 = sortValues.slice(0,10).reverse().map(value => value[1]);
+    const labels2 = sortValues.slice(0,10).reverse().map(id => id[0]);
 
     // Create trace variable
     var trace2 ={
         x: values2,
         y: labels2,
         type: "bar",
-        orientation: "h",
-        text: hoverText2
+        orientation: "h"
     };
         
     // Create the data array for our plot
@@ -245,6 +263,7 @@ function optionChanged(chosen){
     // Bubble chart
     const values5 = filteredData[0].sample_values;
     // console.log(values4);
+    
     // Forming labels of family names
     const familyArray3 = []
     filteredData[0].otu_labels.forEach(function(name) {
@@ -258,12 +277,32 @@ function optionChanged(chosen){
       familyArray4.push(familyFull2);
     });
       
+    // Loop over both arrays and sum common families
+    var tempArr = []
+    var result  = {};
+    for(index in familyArray4){
+      var element = familyArray4[index];
+      if(tempArr.indexOf(element) > -1){
+        result[element]= parseInt(values5[index]) + parseInt(result[element]);
+      }
+      else{
+        tempArr.push(element);
+        result[element] = values5[index];
+      }
+    }
+    // console.log(result);
+    
+    // Put the results into an array and then sort out top 10
+    const resultsArray3 = Object.entries(result);
+    const bubbleValues2 = resultsArray3.map(value => value[1]);
+    const bubbleLabels2 = resultsArray3.map(id => id[0]);
+    
     // Create trace variable
     const trace5 ={
-      x: values5,
-      y: familyArray4,
+      x: bubbleValues2,
+      y: bubbleLabels2,
       mode: "markers",
-      marker: {size:values5}
+      marker: {size:bubbleValues2, sizemode: 'area'}
     };
         
     // Create the data array for our plot
