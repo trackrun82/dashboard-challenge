@@ -72,6 +72,7 @@ function initialPage(){
     const layout1 = {
         title: `Top 10 Bacteria - Subject ${jsonData.metadata[0].id}`,
         yaxis: {'type': 'category',
+                tickfont:{size: 9},
                 automargin: true
         }
     };
@@ -132,7 +133,8 @@ function initialPage(){
     // Define our plot layout
     const layout4 = {
         title: `Count of Bacteria by Family - Subject ${jsonData.metadata[0].id}`,
-        yaxis: {automargin: true}
+        yaxis: {tickfont:{size: 9},
+                automargin: true}
     };
     
     // Plot the chart to a div tag with id "bubble"
@@ -150,14 +152,50 @@ function buildSecondPlot(){
     const sampleLabels = jsonData.samples.map(subject => subject.otu_labels);
     // console.log(sampleLabels)
 
-    idsArray = sampleIds.flat();
     valuesArray = sampleValues.flat();
+    idsArray = sampleIds.flat();
+    labelsArray = sampleLabels.flat();
+
+    // The results for the whole label vs family totals were different so the labels didn't match up
+    // Loop over both arrays and sum common ids for hoverText labels
+    var tempArr2 = []
+    var result2  = {};
+    for(index in labelsArray){
+      var element2 = labelsArray[index];
+      if(tempArr2.indexOf(element2) > -1){
+        result2[element2]= parseInt(valuesArray[index]) + parseInt(result2[element2]);
+      }
+      else{
+        tempArr2.push(element2);
+        result2[element2] = valuesArray[index];
+      }
+    }
+    // console.log(result2);
+    
+    // Put the results into an array and then sort out top 10
+    const resultsArray2 = Object.entries(result2);
+    const sortValues2 = resultsArray2.sort((small, big) =>big[1] - small[1]);
+    // console.log(sortValues2);
+    const hoverText2 = sortValues2.slice(0,10).reverse().map(id => id[0]);
   
-    // Loop over both arrays and sum common ids
+    const genusArray2 = []
+    labelsArray.forEach(function(name) {
+      const genus2 = name.split(";").pop();
+      genusArray2.push(genus2);
+      // console.log(genus2);
+    });
+    
+    const yLabels2 = [];
+    for (let i=0; i < genusArray2.length; i++){
+      yLabels2.push(`${idsArray[i]}: ${genusArray2[i]}`)
+    };
+    // console.log(yLabels2);
+
+    // Loop over both arrays and sum common ids for y-axis labels
     var tempArr = []
     var result  = {};
-    for(index in idsArray){
-      var element = idsArray[index];
+    for(index in yLabels2){
+      var element = yLabels2[index];
       if(tempArr.indexOf(element) > -1){
         result[element]= parseInt(valuesArray[index]) + parseInt(result[element]);
       }
@@ -173,13 +211,15 @@ function buildSecondPlot(){
     const sortValues = resultsArray.sort((small, big) =>big[1] - small[1]);
     const values2 = sortValues.slice(0,10).reverse().map(value => value[1]);
     const labels2 = sortValues.slice(0,10).reverse().map(id => id[0]);
+    // console.log(resultsArray);
 
     // Create trace variable
     var trace2 ={
         x: values2,
         y: labels2,
         type: "bar",
-        orientation: "h"
+        orientation: "h",
+        text: hoverText2
     };
         
     // Create the data array for our plot
@@ -189,6 +229,7 @@ function buildSecondPlot(){
     var layout = {
         title: "Top 10 Bacteria - All Subjects",
         yaxis: {'type': 'category',
+                tickfont:{size: 9},
                 automargin: true
         }
     }
@@ -253,6 +294,7 @@ function optionChanged(chosen){
     const layout3 = {
         title: `Top 10 Bacteria - Subject ${filteredMeta[0].id}`,
         yaxis: {'type': 'category',
+                tickfont:{size: 9},
                 automargin: true
         }
     };
@@ -311,7 +353,8 @@ function optionChanged(chosen){
     // Define our plot layout
     const layout5 = {
         title: `Count of Bacteria by Family - Subject ${filteredMeta[0].id}`,
-        yaxis: {automargin: true}
+        yaxis: {tickfont:{size: 9},
+                automargin: true}
     };
         
     // Plot the chart to a div tag with id "bubble"
